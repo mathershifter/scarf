@@ -2,8 +2,8 @@ import enum
 import json
 from typing import Iterable
 from pydantic import BaseModel, RootModel, field_validator
-from ahab.drivers.interfaces import Device
-from ahab.drivers.helpers import _verify_helper
+from scarf.drivers.interfaces import Device
+from scarf.drivers.helpers import _verify_helper
 
 
 class Status(enum.StrEnum):
@@ -124,6 +124,6 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
-    from ahab.device import Device as Device_
+    from scarf.device import Device as Device_
 
     asyncio.run(main())

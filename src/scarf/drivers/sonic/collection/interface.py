@@ -1,8 +1,8 @@
 import json
 from pydantic import BaseModel, RootModel
 
-from ahab.drivers.interfaces import Device
-from ahab.conv import iorn, forn
+from scarf.drivers.interfaces import Device
+from scarf.conv import iorn, forn
 
 
 class InterfaceCounters(BaseModel):
@@ -124,6 +124,6 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
-    from ahab.device import Device as Device_
+    from scarf.device import Device as Device_
 
     asyncio.run(main())

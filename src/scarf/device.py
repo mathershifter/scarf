@@ -7,16 +7,13 @@ from pathlib import Path
 from typing import AsyncIterator, Any
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, asdict
-# import structlog
 
 import asyncssh
-# from pydantic import BaseModel
 
 from scarf.settings import Settings
 from scarf.drivers import Driver, from_device
 
 BytesOrStr = bytes | str
-# log = structlog.get_logger()
 
 
 class DeviceError(Exception):
@@ -86,7 +83,7 @@ def device_lock(device: "Device", lock_dir: Path):
     except OSError:
         fd.close()
         raise DeviceLocked(
-            f"Device {device.target} is locked — another ahab command may be running"
+            f"Device {device.target} is locked — another command may be running"
         )
     try:
         fd.write(str(os.getpid()))

@@ -1,6 +1,6 @@
 import io
 from pydantic import BaseModel
-from ahab.drivers.interfaces import Device
+from scarf.drivers.interfaces import Device
 
 
 class TechSupport(BaseModel):

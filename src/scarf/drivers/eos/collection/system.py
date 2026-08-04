@@ -1,7 +1,7 @@
 from typing import Iterable
 from pydantic import BaseModel
-from ahab.drivers.interfaces import Device
-from ahab.drivers.helpers import _verify_helper
+from scarf.drivers.interfaces import Device
+from scarf.drivers.helpers import _verify_helper
 
 
 class IsEOS(BaseModel):

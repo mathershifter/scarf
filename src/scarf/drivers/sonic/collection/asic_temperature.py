@@ -3,8 +3,8 @@ from typing import Any, Callable
 
 from pydantic import BaseModel, RootModel, model_validator
 import numpy as np
-from ahab.drivers.interfaces import Device
-from ahab.utils import snake_case
+from scarf.drivers.interfaces import Device
+from scarf.utils import snake_case
 
 
 class AsicTemperature(BaseModel):

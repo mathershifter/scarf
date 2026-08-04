@@ -225,6 +225,6 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
-    from ahab.device import Device as Device_
+    from scarf.device import Device as Device_
 
     asyncio.run(main())

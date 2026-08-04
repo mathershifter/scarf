@@ -1,6 +1,6 @@
 import re
 from typing import Any
-# from ahab.utils import snake_case
+# from scarf.utils import snake_case
 from scarf.utils import snake_case
 
 def _split_line(line: str) -> list[str]:
