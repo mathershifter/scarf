@@ -1,7 +1,9 @@
-from typing import Iterable
+from collections.abc import Iterable
+
 from pydantic import BaseModel, RootModel
-from scarf.drivers.interfaces import Device
+
 from scarf.drivers.helpers import _verify_helper
+from scarf.drivers.interfaces import Device
 from scarf.drivers.sonic.helpers import _parse_show_table
 
 
@@ -17,8 +19,7 @@ class Fan(BaseModel):
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
 
 class Fans(RootModel):
@@ -41,15 +42,14 @@ class Fans(RootModel):
                     presence=f["presence"],
                     status=f["status"],
                 )
-                for f in _parse_show_table(out)
+                for f in _parse_show_table(str(out))
             ]
         )
 
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
 
 async def main():
@@ -63,6 +63,7 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     from scarf.device import Device as Device_
 
     asyncio.run(main())

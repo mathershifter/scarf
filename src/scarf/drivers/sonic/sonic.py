@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from scarf.drivers.sonic.collection import SysInfo, IsSonic
 from scarf.drivers.interfaces import Device
+from scarf.drivers.sonic.collection import IsSonic, SysInfo
 
 
 class SONiCDriver(BaseModel):
@@ -26,7 +26,7 @@ class SONiCDriver(BaseModel):
             hostname=sys_info.hostname.hostname,
             version=sys_info.version.version,
             serial_number=sys_info.version.serial_number,
-            model=sys_info.version.model_number,
+            model=sys_info.version.model,
             hwsku=sys_info.version.hwsku,
             system_mac=sys_info.syseeprom.mac,
         )

@@ -1,12 +1,13 @@
 import asyncio
 import socket
 import time
-from ipaddress import ip_network, IPv4Address, IPv6Address, IPv4Network, IPv6Network
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
+from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network, ip_network
 
-from pydantic import BaseModel, RootModel
 import asyncssh
-from scarf.device import Device, AuthHandler
+from pydantic import BaseModel, RootModel
+
+from scarf.device import AuthHandler, Device
 
 # log = structlog.get_logger()
 
@@ -26,8 +27,7 @@ async def _check_ssh(ip: AnyIPAddress):
             conn.close()
         except asyncssh.PermissionDenied:
             pass
-        except Exception:
-            # print(f"Failed to connect to {ip}: {exc}")
+        except (OSError, asyncssh.Error):
             return ip, False
 
         return ip, True
@@ -110,7 +110,7 @@ class Scanner:
                         if self._auto_connect:
                             try:
                                 await device.connect()
-                            except Exception:
+                            except (OSError, asyncssh.Error):
                                 # log.warning(
                                 #     "scan", msg=f"Failed to connect to {ip}, skipping"
                                 # )

@@ -1,4 +1,4 @@
-from typing import TypeVar, Protocol
+from typing import Protocol, TypeVar
 
 from scarf.drivers.interfaces import Device
 

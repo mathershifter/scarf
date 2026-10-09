@@ -1,3 +1,3 @@
-from scarf.drivers.sonic.collection.system import SysInfo, SySyseeprom, Version, IsSonic
+from scarf.drivers.sonic.collection.system import IsSonic, SysInfo, SySyseeprom, Version
 
-__all__ = ["SysInfo", "SySyseeprom", "Version", "IsSonic"]
+__all__ = ["IsSonic", "SySyseeprom", "SysInfo", "Version"]

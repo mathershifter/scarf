@@ -1,11 +1,18 @@
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import BaseModel, RootModel, model_validator
-import numpy as np
+
 from scarf.drivers.interfaces import Device
 from scarf.utils import snake_case
 
+try:
+    import numpy as np  # type: ignore
+except ImportError:
+    raise ImportError(
+        "numpy is required for AsicTemperature collection. Please install numpy."
+    )
 
 class AsicTemperature(BaseModel):
     sensor: int

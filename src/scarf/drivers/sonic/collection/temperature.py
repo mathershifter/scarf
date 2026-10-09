@@ -1,8 +1,10 @@
+from collections.abc import Iterable
 from functools import cached_property
-from typing import Iterable
+
 from pydantic import BaseModel, RootModel
-from scarf.drivers.interfaces import Device
+
 from scarf.drivers.helpers import _verify_helper
+from scarf.drivers.interfaces import Device
 from scarf.drivers.sonic.helpers import _parse_show_table
 
 
@@ -49,14 +51,13 @@ class Temperatures(RootModel):
         status, out, err = await device.run("show platform temperature")
         if status != 0:
             raise ValueError(f"Failed to collect temperature: {err}")
-        data = _parse_show_table(out)
+        data = _parse_show_table(str(out))
         return cls([Sensor(**item) for item in data])
 
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
     def get_sensor(self, name: str) -> Sensor | None:
         for s in self.root:
@@ -76,6 +77,7 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     from scarf.device import Device as Device_
 
     asyncio.run(main())

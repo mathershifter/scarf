@@ -1,8 +1,9 @@
 import json
+
 from pydantic import BaseModel, RootModel
 
 from scarf.drivers.interfaces import Device
-from scarf.conv import iorn, forn
+from scarf.utils import forn, iorn
 
 
 class InterfaceCounters(BaseModel):
@@ -124,6 +125,7 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     from scarf.device import Device as Device_
 
     asyncio.run(main())
