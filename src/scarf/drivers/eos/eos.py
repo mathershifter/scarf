@@ -20,12 +20,12 @@ class EOSDriver(BaseModel):
             return None
 
         sys_info = await SysInfo.collect(device)
-        # print(f"sys_info: {sys_info}")
+        
         return cls(
             hostname=sys_info.hostname,
             version=sys_info.version.version,
             serial_number=sys_info.version.serial_number,
             model=sys_info.version.model,
             hwsku=sys_info.version.hwsku,
-            system_mac=sys_info.version.serial_number,
+            system_mac=sys_info.version.sys_mac_address,
         )

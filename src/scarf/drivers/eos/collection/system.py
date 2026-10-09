@@ -52,6 +52,7 @@ class Version(BaseModel):
     hardware_revision: str | None = None
     model: str
     serial_number: str
+    sys_mac_address: str
     uptime: float | None = None
     
 
@@ -71,6 +72,7 @@ class Version(BaseModel):
             serial_number=data["serialNumber"],
             model=data["modelName"],
             hardware_revision=data["hardwareRevision"],
+            sys_mac_address=data["systemMacAddress"],
             uptime=data.get("uptime")
         )
 
