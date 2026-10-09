@@ -383,3 +383,5 @@ ipython_config.py
 .knowledge-base
 .logs/
 .data/
+
+**/.worktrees/

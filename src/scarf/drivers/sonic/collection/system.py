@@ -1,9 +1,11 @@
-from typing import Iterable
+from collections.abc import Iterable
+
 from pydantic import BaseModel
-from scarf.drivers.interfaces import Device
-from scarf.utils import split_keyval
+
 from scarf.drivers.helpers import _verify_helper
+from scarf.drivers.interfaces import Device
 from scarf.drivers.sonic.helpers import _parse_show_keyval
+from scarf.utils import split_keyval
 
 
 class IsSonic(BaseModel):
@@ -20,8 +22,7 @@ class IsSonic(BaseModel):
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
 
 class Hostname(BaseModel):
@@ -38,13 +39,12 @@ class Hostname(BaseModel):
         if status != 0:
             raise ValueError(f"Failed to collect hostname: {err}")
 
-        return cls(hostname=out.strip())
+        return cls(hostname=str(out).strip())
 
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
 
 class SySyseeprom(BaseModel):
@@ -61,7 +61,7 @@ class SySyseeprom(BaseModel):
         if status != 0:
             raise ValueError(f"Failed to collect sysinfo: {err}")
 
-        syseeprom_data = _parse_show_platform_syseeprom(out)
+        syseeprom_data = _parse_show_platform_syseeprom(str(out))
         if "mfg_time2" not in syseeprom_data:
             syseeprom_data["mfg_time2"] = ""
         
@@ -77,8 +77,7 @@ class SySyseeprom(BaseModel):
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
 
 class Version(BaseModel):
@@ -86,7 +85,7 @@ class Version(BaseModel):
     platform: str
     hwsku: str
     serial_number: str
-    model_number: str
+    model: str
     hardware_revision: str
     uptime: str
 
@@ -95,13 +94,13 @@ class Version(BaseModel):
         status, out, err = await device.run("show version")
         if status != 0:
             raise ValueError(f"Failed to collect sysinfo: {err}")
-        version_data = _parse_show_version(out)
+        version_data = _parse_show_version(str(out))
         return cls(
             version=version_data["version"],
             platform=version_data["platform"],
             hwsku=version_data["hwsku"],
             serial_number=version_data["serial_number"],
-            model_number=version_data["model_number"],
+            model=version_data["model_number"],
             hardware_revision=version_data["hardware_revision"],
             uptime=version_data["uptime"],
         )
@@ -109,8 +108,7 @@ class Version(BaseModel):
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
 
 class SysInfo(BaseModel):
@@ -212,19 +210,5 @@ def _parse_show_platform_syseeprom(output: str):
     } | data
 
 
-__all__ = ["SysInfo", "SySyseeprom", "Version"]
+__all__ = ["SySyseeprom", "SysInfo", "Version"]
 
-
-async def main():
-    device = Device_("moby253")
-    await device.connect()
-    sysinfo = await SysInfo.collect(device)
-    print(sysinfo)
-    await device.close()
-
-
-if __name__ == "__main__":
-    import asyncio
-    from scarf.device import Device as Device_
-
-    asyncio.run(main())

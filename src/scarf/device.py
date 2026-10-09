@@ -2,15 +2,14 @@ import asyncio
 import enum
 import fcntl
 import os
-from contextlib import contextmanager
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager, contextmanager
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import AsyncIterator, Any
-from contextlib import asynccontextmanager
-from dataclasses import dataclass, asdict
+from typing import Any
 
 import asyncssh
 
-from scarf.settings import Settings
 from scarf.drivers import Driver, from_device
 
 BytesOrStr = bytes | str
@@ -77,21 +76,19 @@ def device_lock(device: "Device", lock_dir: Path):
     """Exclusive per-device lock. Raises DeviceLocked if already held."""
     path = lock_file(device.target, lock_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd = open(path, "w")
-    try:
-        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError:
-        fd.close()
-        raise DeviceLocked(
-            f"Device {device.target} is locked — another command may be running"
-        )
-    try:
-        fd.write(str(os.getpid()))
-        fd.flush()
-        yield
-    finally:
-        fcntl.flock(fd, fcntl.LOCK_UN)
-        fd.close()
+    with open(path, "w") as fd:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            raise DeviceLocked(
+                f"Device {device.target} is locked — another command may be running"
+            )
+        try:
+            fd.write(str(os.getpid()))
+            fd.flush()
+            yield
+        finally:
+            fcntl.flock(fd, fcntl.LOCK_UN)
 
 
 class Device:
@@ -105,7 +102,7 @@ class Device:
         self,
         target: str,
         auth: AuthHandler | tuple[str, str] | None = None,
-        driver: Driver | None = None,
+        # driver: Driver | None = None,
         context: str | None = None,
         timeout: int = 10,
     ):
@@ -134,6 +131,7 @@ class Device:
 
     async def connect(self) -> None:
         """Open the SSH connection and bootstrap the device state."""
+
         self._conn = await asyncio.wait_for(
             asyncssh.connect(
                 self._target,
@@ -153,18 +151,6 @@ class Device:
             self._conn.close()
             self._conn = None
 
-    # ------------------------------------------------------------------
-    # Serial number (cached after first fetch)
-    # ------------------------------------------------------------------
-
-    # async def _get_serial_number(self) -> str:
-    #     status, out, err = await self.run("show platform syseeprom")
-    #     if status != 0:
-    #         raise RunError(f"Failed to fetch serial number, is this device running SONiC?, {err}")
-    #     for line in out.splitlines():
-    #         if "SerialNumber:" in line:
-    #             return line.split(":", 1)[-1].strip()
-    #     raise ValueError("failed to retrieve serial number from target")
 
     async def _get_driver(self) -> Driver | None:
         if self._driver is not None:
@@ -172,9 +158,6 @@ class Device:
 
         return await from_device(self)  # type: ignore[arg-type]
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
 
     def _prefixed(self, cmd: str) -> str:
         """Prepend workspace cd so every command runs in the right directory.
@@ -187,24 +170,11 @@ class Device:
 
         return f"cd {self._context} && {cmd}"
 
-    # async def _run_raw(self, cmd: str) -> str:
-    #     """Run *cmd* without the workspace prefix (used during bootstrap)."""
-    #     assert self._conn is not None, "not connected"
-    #     result = await self._conn.run(cmd)
-
-    #     if isinstance(result.stdout, bytes):
-    #         return result.stdout.decode("utf-8")
-
-    #     return str(result.stdout) or ""
 
     def _handle_auth(self, auth: AuthHandler | tuple[str, str] | None) -> AuthHandler | None:
         if isinstance(auth, tuple):
             return PasswordHandler(username=auth[0], password=auth[1])
         return auth
-
-    # ------------------------------------------------------------------
-    # Public command API
-    # ------------------------------------------------------------------
 
     @asynccontextmanager
     async def context(self, context: str = ""):
@@ -245,8 +215,8 @@ class Device:
         # if result.stdout:
         #     for line in result.stdout.splitlines():
         #         self._log.info("run", line=line, cmd=cmd)
-        result.stdout
-        result.stderr
+        # result.stdout
+        # result.stderr
         return result.exit_status, result.stdout, result.stderr
 
     async def stream(self, cmd: str) -> AsyncIterator[str]:
@@ -264,7 +234,7 @@ class Device:
                 yield stripped
 
             complete = await process.wait()
-
+            
             err = complete.stderr or ""
             if isinstance(err, bytes):
                 err = err.decode("utf-8")
@@ -294,10 +264,6 @@ class Device:
             async for line in self.stream(cmd):
                 yield line
 
-    # ------------------------------------------------------------------
-    # Properties
-    # ------------------------------------------------------------------
-
     @property
     def conn(self) -> asyncssh.SSHClientConnection:
         """Raw asyncssh connection, used by asyncssh.scp callers."""
@@ -310,7 +276,6 @@ class Device:
 
     @property
     def serial(self) -> str:
-        # assert self._serial is not None, "not connected"
         return self._driver.serial_number if self._driver else "(unknown)"
 
     @property
@@ -321,6 +286,6 @@ class Device:
     def prompt(self) -> str:
         return self._prompt
 
-    # @property
-    # def log(self):
-    #     return self._log
+    @property
+    def hostname(self) -> str:
+        return self._driver.hostname if self._driver else "(unknown)"

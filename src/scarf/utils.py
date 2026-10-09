@@ -1,5 +1,6 @@
 import re
 
+
 def split_keyval(line: str, sep: str = ":") -> tuple[str, str | None]:
     """Split a line into a key and a value. Returns (key, None) if no value is found."""
     line = line.strip()
@@ -22,3 +23,29 @@ def snake_case(s: str) -> str:
         return re.sub(r"(?<!^)(?=[A-Z])", "_", s).lower()
 
     return s
+
+def numerize(s: str | None) -> str | None:
+    """Extract the first number from a string."""
+    if not s:
+        return None
+    m = re.search(r"\d+(\.\d+)?(?:[Ee][\+-]\d+)?", s)
+    if m:
+        return m.group()
+
+    return None
+
+
+def iorn(s: str | None) -> int | None:
+    """Convert a string to an integer, or None if not a number."""
+    s = numerize(s)
+    if s:
+        return int(s)
+    return None
+
+
+def forn(s: str | None) -> float | None:
+    """Convert a string to a float, or None if not a number."""
+    s = numerize(s)
+    if s:
+        return float(s)
+    return None

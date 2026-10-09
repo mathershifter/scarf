@@ -1,9 +1,10 @@
 import enum
-from typing import Iterable
+from collections.abc import Iterable
 
 from pydantic import BaseModel, RootModel, field_validator
-from scarf.drivers.interfaces import Device
+
 from scarf.drivers.helpers import _verify_helper
+from scarf.drivers.interfaces import Device
 from scarf.drivers.sonic.helpers import _parse_show_table
 
 
@@ -38,8 +39,7 @@ class MonitoredItem(BaseModel):
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
 
 class SystemHealth(RootModel):
@@ -48,8 +48,7 @@ class SystemHealth(RootModel):
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
     @classmethod
     async def collect(cls, device: Device) -> "SystemHealth":
@@ -57,7 +56,7 @@ class SystemHealth(RootModel):
         if status != 0:
             raise ValueError(f"Failed to collect system health: {err}")
 
-        return cls([MonitoredItem(**item) for item in _parse_show_table(out)])
+        return cls([MonitoredItem(**item) for item in _parse_show_table(str(out))])
 
 
 async def main():
@@ -71,6 +70,7 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     from scarf.device import Device as Device_
 
     asyncio.run(main())

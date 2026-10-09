@@ -1,11 +1,14 @@
-from typing import Iterable, TypeVar, Protocol, AsyncIterator
+from collections.abc import AsyncIterator, Iterable
+from typing import Protocol, TypeVar
 
 T = TypeVar("T")
 
+BytesOrStr = bytes | str
+
 
 class Device(Protocol):
-    async def run(self, cmd: str) -> tuple[int, str, str]: ...
-    def stream(self, cmd: str) -> AsyncIterator[str]: ...
+    async def run(self, cmd: str) -> tuple[int, BytesOrStr, BytesOrStr]: ...
+    def stream(self, cmd: str) -> AsyncIterator[BytesOrStr]: ...
 
 
 class Verifier[T](Protocol):

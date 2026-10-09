@@ -1,8 +1,9 @@
-from typing import Iterable
-from scarf.drivers.interfaces import Collector, Verifier, Device
-from scarf.drivers.sonic import SONiCDriver
-from scarf.drivers.eos import EOSDriver
+from collections.abc import Iterable
+
 from scarf.drivers.driver import Driver
+from scarf.drivers.eos import EOSDriver
+from scarf.drivers.interfaces import Collector, Device, Verifier
+from scarf.drivers.sonic import SONiCDriver
 
 DRIVERS = [SONiCDriver, EOSDriver]
 
@@ -31,11 +32,11 @@ async def verify(
 
 
 __all__ = [
-    "collect",
-    "verify",
-    "from_device",
-    "SONiCDriver",
-    "EOSDriver",
-    "Driver",
     "DRIVERS",
+    "Driver",
+    "EOSDriver",
+    "SONiCDriver",
+    "collect",
+    "from_device",
+    "verify",
 ]

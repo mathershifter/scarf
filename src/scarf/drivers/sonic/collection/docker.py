@@ -1,9 +1,11 @@
 import enum
 import json
-from typing import Iterable
+from collections.abc import Iterable
+
 from pydantic import BaseModel, RootModel, field_validator
-from scarf.drivers.interfaces import Device
+
 from scarf.drivers.helpers import _verify_helper
+from scarf.drivers.interfaces import Device
 
 
 class Status(enum.StrEnum):
@@ -109,8 +111,7 @@ class DockerContainers(RootModel):
     def verify(
         self, wanted: Iterable[tuple[str, str]] | None
     ) -> Iterable[tuple[bool, str, str]]:
-        for ok, field, msg in _verify_helper(self, wanted):
-            yield ok, field, msg
+        yield from _verify_helper(self, wanted)
 
 
 async def main():
@@ -124,6 +125,7 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     from scarf.device import Device as Device_
 
     asyncio.run(main())

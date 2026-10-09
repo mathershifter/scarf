@@ -1,5 +1,7 @@
 import io
+
 from pydantic import BaseModel
+
 from scarf.drivers.interfaces import Device
 
 
@@ -11,7 +13,7 @@ class TechSupport(BaseModel):
     async def collect(cls, device: Device) -> "TechSupport":
         output = io.StringIO()
         async for out in device.stream("show techsupport --silent"):
-            output.write(out)
+            output.write(str(out))
         output.seek(0)
         lines = output.readlines()
 
