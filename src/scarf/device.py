@@ -2,6 +2,7 @@ import asyncio
 import enum
 import fcntl
 import os
+import shlex
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, contextmanager
 from dataclasses import asdict, dataclass
@@ -19,7 +20,7 @@ class DeviceError(Exception):
     pass
 
 
-class ConnectionError(DeviceError):
+class SessionError(DeviceError):
     pass
 
 
@@ -168,7 +169,7 @@ class Device:
         if not self._context:
             return cmd
 
-        return f"cd {self._context} && {cmd}"
+        return f'cd "{shlex.quote(self._context)}" && {cmd}'
 
 
     def _handle_auth(self, auth: AuthHandler | tuple[str, str] | None) -> AuthHandler | None:
@@ -204,7 +205,7 @@ class Device:
             result.stderr = result.stderr.decode("utf-8")
 
         if result.exit_status is None:
-            raise ConnectionError("Command failed, connection closed.")
+            raise SessionError("Command failed, connection closed.")
 
         if result.stderr is None:
             result.stderr = ""
